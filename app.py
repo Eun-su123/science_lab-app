@@ -48,7 +48,7 @@ def save_submitted_logs(logs):
 # --- 2. 페이지 기본 설정 및 초기화 ---
 
 st.set_page_config(
-    page_title="산-염기 탐구 실험실",
+    page_title="산-염기 탐구 실험실!!",
     page_icon="🧪",
     layout="centered" # 화면을 중앙 정렬하여 집중도를 높임
 )
