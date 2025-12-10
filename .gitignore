@@ -1,3 +1,8 @@
+
+# Streamlit secrets - 절대 깃허브에 올리지 마세요!
+.streamlit/secrets.toml
+
+
 # Python
 __pycache__/
 *.py[cod]
@@ -34,4 +39,5 @@ Thumbs.db
 # 임시 파일
 *.tmp
 *.temp
+
 
