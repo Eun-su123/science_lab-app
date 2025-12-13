@@ -328,7 +328,6 @@ with st.expander("👩‍🏫 교사 관리 페이지"):
     if "TEACHER_PASSWORD" not in st.secrets:
         st.error("설정 파일(.streamlit/secrets.toml)에 'TEACHER_PASSWORD'가 없습니다.")
     elif password.strip() == st.secrets["TEACHER_PASSWORD"]:
-    elif password.strip() == st.secrets["TEACHER_PASSWORD"]:
         # --- 수업 설정 관리 ---
         config = load_config()
         new_session = st.radio(
