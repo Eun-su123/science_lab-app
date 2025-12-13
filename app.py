@@ -281,6 +281,14 @@ st.markdown("---")
 with st.expander("👩‍🏫 교사 관리 페이지"):
     # 디버깅용: 라이브러리 버전 확인
     st.caption(f"시스템 정보: google-generativeai v{genai.__version__}")
+
+    if st.button("사용 가능한 AI 모델 확인하기"):
+        try:
+            genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
+            models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+            st.success(f"연결 성공! 사용 가능 모델: {models}")
+        except Exception as e:
+            st.error(f"모델 목록 가져오기 실패: {e}")
     
     # 비밀번호 입력 필드
     password = st.text_input("선생님 비밀번호를 입력하세요.", type="password")
