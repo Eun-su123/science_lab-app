@@ -10,7 +10,7 @@ import google.generativeai as genai
 # --- 1. 앱에 필요한 기본 데이터 및 설정 ---
 # --- 1. 앱에 필요한 기본 데이터 및 설정 ---
 SUBMITTED_LOGS_FILE = "submitted_logs.json"
-CONFIG_FILE = "config.json"
+
 
 # AI를 이용한 용액 성질 예측 함수
 def predict_solution_property(solution_name):
@@ -40,20 +40,7 @@ def predict_solution_property(solution_name):
         # 디버깅을 위해 에러 메시지 직접 출력
         return f"에러: {str(e)}"
 
-# 설정 불러오기
-def load_config():
-    if not os.path.exists(CONFIG_FILE):
-        return {"session": "3차시"} # 기본값
-    try:
-        with open(CONFIG_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except:
-        return {"session": "3차시"}
 
-# 설정 저장하기
-def save_config(config):
-    with open(CONFIG_FILE, "w", encoding="utf-8") as f:
-        json.dump(config, f, ensure_ascii=False, indent=4)
 
 # 실험 결과에 따라 보여줄 이미지 파일들을 생성하는 함수
 # @st.cache_resource: 함수 결과를 캐시에 저장하여 앱 실행 속도를 높여줍니다.
@@ -69,8 +56,6 @@ def create_images():
         "litmus_blue.png": "#335BFF",        
         "phenol_red.png": "#FF33A1",
         "phenol_colorless.png": "#E0E0E0",
-        "cabbage_red.png": "#FF0000",       # 양배추 - 산성 (붉은색)
-        "cabbage_green.png": "#00FF00",     # 양배추 - 염기성 (초록/노란색 계열)
     }
 
     for filename, color in images_to_create.items():
@@ -140,15 +125,9 @@ if st.session_state.experiment_step == "ready":
     )
 
     # 공통 지시약 선택
-    config = load_config()
-    indicator_options = ["붉은색 리트머스 종이", "푸른색 리트머스 종이", "페놀프탈레인 용액"]
-    
-    if config.get("session") == "3차시":
-        indicator_options.append("붉은 양배추 지시약")
-
     indicator = st.selectbox(
         "어떤 지시약을 사용해볼까요?",
-        options=indicator_options,
+        options=["붉은색 리트머스 종이", "푸른색 리트머스 종이", "페놀프탈레인 용액"],
         index=None,
         placeholder="지시약을 선택하세요"
     )
@@ -213,12 +192,7 @@ elif st.session_state.experiment_step == "result":
         elif prop == "산성":
             st.image("images/phenol_colorless.png", caption="페놀프탈레인 용액의 색이 변하지 않았습니다.")
 
-    # 4. 붉은 양배추 지시약 실험 결과
-    elif exp_data["indicator"] == "붉은 양배추 지시약":
-        if prop == "산성":
-            st.image("images/cabbage_red.png", caption="붉은 양배추 지시약이 붉은색 계열로 변했습니다.")
-        elif prop == "염기성":
-            st.image("images/cabbage_green.png", caption="붉은 양배추 지시약이 초록/노란색 계열로 변했습니다.")
+
 
     st.markdown("---")
     st.subheader("🤔 결과 분석하기")
@@ -329,21 +303,6 @@ with st.expander("👩‍🏫 교사 관리 페이지"):
         st.error("설정 파일(.streamlit/secrets.toml)에 'TEACHER_PASSWORD'가 없습니다.")
     elif password.strip() == st.secrets["TEACHER_PASSWORD"]:
         # --- 수업 설정 관리 ---
-        config = load_config()
-        new_session = st.radio(
-            "수업 차시 설정", 
-            ["2차시", "3차시"], 
-            index=0 if config.get("session") == "2차시" else 1,
-            horizontal=True,
-            help="2차시: 리트머스/페놀프탈레인, 3차시: + 붉은 양배추 지시약 추가"
-        )
-        if new_session != config.get("session"):
-            config["session"] = new_session
-            save_config(config)
-            st.success(f"수업 설정을 '{new_session}'로 변경했습니다!")
-            time.sleep(0.5)
-            st.rerun()
-            
         st.markdown("---")
         
         tab1, tab2, tab3 = st.tabs(["용액 요청 관리", "제출된 탐구일지", "오답률 분석"])
