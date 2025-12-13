@@ -255,7 +255,9 @@ with st.expander("👩‍🏫 교사 관리 페이지"):
     # 비밀번호가 맞을 경우에만 관리자 기능 표시
     # st.secrets를 사용하여 안전하게 비밀번호를 불러옵니다.
     # 이 비밀번호는 Streamlit Cloud의 설정에서 지정하게 됩니다.
-    if "TEACHER_PASSWORD" in st.secrets and password == st.secrets["TEACHER_PASSWORD"]:
+    if "TEACHER_PASSWORD" not in st.secrets:
+        st.error("설정 파일(.streamlit/secrets.toml)에 'TEACHER_PASSWORD'가 없습니다.")
+    elif password.strip() == st.secrets["TEACHER_PASSWORD"]:
         tab1, tab2 = st.tabs(["용액 요청 관리", "제출된 탐구일지"])
 
         with tab1:
