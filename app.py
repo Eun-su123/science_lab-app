@@ -288,7 +288,8 @@ with st.expander("👩‍🏫 교사 관리 페이지"):
     if "TEACHER_PASSWORD" not in st.secrets:
         st.error("설정 파일(.streamlit/secrets.toml)에 'TEACHER_PASSWORD'가 없습니다.")
     elif password.strip() == st.secrets["TEACHER_PASSWORD"]:
-        tab1, tab2 = st.tabs(["용액 요청 관리", "제출된 탐구일지"])
+    elif password.strip() == st.secrets["TEACHER_PASSWORD"]:
+        tab1, tab2, tab3 = st.tabs(["용액 요청 관리", "제출된 탐구일지", "오답률 분석"])
 
         with tab1:
             st.subheader("학생들이 요청한 용액 목록")
@@ -346,6 +347,58 @@ with st.expander("👩‍🏫 교사 관리 페이지"):
                         st.markdown(f"**제출자:** {submission['info']} ({submission['timestamp']})")
                         log_df = pd.DataFrame(submission['log'])
                         st.dataframe(log_df, use_container_width=True)
+
+        with tab3:
+            st.subheader("📊 학생 오답률 분석")
+            all_logs_data = load_submitted_logs()
+            
+            if not all_logs_data:
+                st.info("분석할 데이터가 충분하지 않습니다.")
+            else:
+                # 모든 로그 데이터 통합
+                flat_data = []
+                for submission in all_logs_data:
+                    for entry in submission['log']:
+                        flat_data.append(entry)
+                
+                if not flat_data:
+                    st.info("상세 로그 데이터가 없습니다.")
+                else:
+                    df = pd.DataFrame(flat_data)
+                    
+                    if '정답 여부' in df.columns:
+                        # 오답 여부 컬럼 추가 (1: 오답, 0: 정답)
+                        df['is_incorrect'] = df['정답 여부'].apply(lambda x: 1 if "오답" in x else 0)
+                        
+                        col_anal1, col_anal2 = st.columns(2)
+                        
+                        with col_anal1:
+                            st.markdown("### 🧪 용액별 오답률")
+                            # 용액별 집계
+                            sol_stats = df.groupby('용액').agg(
+                                시도횟수=('is_incorrect', 'count'),
+                                오답횟수=('is_incorrect', 'sum')
+                            ).reset_index()
+                            sol_stats['오답률(%)'] = (sol_stats['오답횟수'] / sol_stats['시도횟수']) * 100
+                            sol_stats['오답률(%)'] = sol_stats['오답률(%)'].round(1)
+                            
+                            st.bar_chart(sol_stats.set_index('용액')['오답률(%)'], color='#FF4B4B')
+                            st.dataframe(sol_stats, hide_index=True)
+
+                        with col_anal2:
+                            st.markdown("### 💧 지시약별 오답률")
+                            # 지시약별 집계
+                            ind_stats = df.groupby('사용한 지시약').agg(
+                                시도횟수=('is_incorrect', 'count'),
+                                오답횟수=('is_incorrect', 'sum')
+                            ).reset_index()
+                            ind_stats['오답률(%)'] = (ind_stats['오답횟수'] / ind_stats['시도횟수']) * 100
+                            ind_stats['오답률(%)'] = ind_stats['오답률(%)'].round(1)
+                            
+                            st.bar_chart(ind_stats.set_index('사용한 지시약')['오답률(%)'], color='#4B4BFF')
+                            st.dataframe(ind_stats, hide_index=True)
+                    else:
+                        st.warning("데이터 형식에 문제가 있어 분석할 수 없습니다.")
 
     elif password: # 비밀번호가 입력되었지만 일치하지 않을 경우
         st.error("비밀번호가 올바르지 않습니다. 다시 시도해주세요.")
