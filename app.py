@@ -18,7 +18,7 @@ def predict_solution_property(solution_name):
     
     try:
         genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
-        model = genai.GenerativeModel('gemini-pro')
+        model = genai.GenerativeModel('gemini-1.5-flash')
         
         prompt = f"""
         질문: '{solution_name}'의 pH 성질은 일반적으로 산성인가요, 염기성인가요? 
