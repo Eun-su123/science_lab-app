@@ -5,8 +5,37 @@ import time
 
 import json
 import pandas as pd
+import google.generativeai as genai
+
 # --- 1. 앱에 필요한 기본 데이터 및 설정 ---
 SUBMITTED_LOGS_FILE = "submitted_logs.json"
+
+# AI를 이용한 용액 성질 예측 함수
+def predict_solution_property(solution_name):
+    # API 키 확인
+    if "GOOGLE_API_KEY" not in st.secrets:
+        return "API 키 없음"
+    
+    try:
+        genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
+        model = genai.GenerativeModel('gemini-pro')
+        
+        prompt = f"""
+        질문: '{solution_name}'의 pH 성질은 일반적으로 산성인가요, 염기성인가요? 
+        다른 중립적이거나 복합적인 설명은 제외하고, 딱 하나만 선택해서 대답해주세요.
+        만약 확실히 산성이면 '산성', 염기성이면 '염기성', 둘 다 아니거나 모르면 '알 수 없음'이라고만 답해주세요.
+        """
+        response = model.generate_content(prompt)
+        answer = response.text.strip()
+        
+        if "산성" in answer:
+            return "산성"
+        elif "염기성" in answer:
+            return "염기성"
+        else:
+            return "알 수 없음"
+    except Exception as e:
+        return f"에러: {str(e)}"
 # 실험 결과에 따라 보여줄 이미지 파일들을 생성하는 함수
 # @st.cache_resource: 함수 결과를 캐시에 저장하여 앱 실행 속도를 높여줍니다.
 @st.cache_resource
@@ -273,9 +302,18 @@ with st.expander("👩‍🏫 교사 관리 페이지"):
                         with col1:
                             st.markdown(f"**요청 용액:** `{req_solution}`")
                         with col2:
+                            # AI 예측 실행
+                            ai_prediction = predict_solution_property(req_solution)
+                            
+                            # 예측 결과에 따라 라디오 버튼 기본값 설정
+                            default_index = 0 if ai_prediction == "산성" else 1 if ai_prediction == "염기성" else None
+                            
+                            st.write(f"🤖 AI 예측: **{ai_prediction}**")
+                            
                             # 각 용액에 대한 고유한 키를 생성
                             property_choice = st.radio(
                                 "성질 선택", ["산성", "염기성"],
+                                index=default_index,
                                 key=f"prop_{req_solution}",
                                 horizontal=True,
                                 label_visibility="collapsed"
