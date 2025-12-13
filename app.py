@@ -34,9 +34,9 @@ def predict_solution_property(solution_name):
             return "염기성"
         else:
             return "알 수 없음"
-    except Exception:
-        # 에러가 발생하면 사용자에게 보여주지 않고 '알 수 없음' 처리
-        return "알 수 없음 (AI 미사용)"
+    except Exception as e:
+        # 디버깅을 위해 에러 메시지 직접 출력
+        return f"에러: {str(e)}"
 # 실험 결과에 따라 보여줄 이미지 파일들을 생성하는 함수
 # @st.cache_resource: 함수 결과를 캐시에 저장하여 앱 실행 속도를 높여줍니다.
 @st.cache_resource
