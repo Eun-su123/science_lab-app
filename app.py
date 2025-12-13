@@ -278,15 +278,23 @@ with st.expander("📖 나의 탐구 일지 보기"):
 # --- 5. 교사 관리 페이지 ---
 st.markdown("---")
 with st.expander("👩‍🏫 교사 관리 페이지"):
-    # 비밀번호 입력 필드
-    password = st.text_input("선생님 비밀번호를 입력하세요.", type="password")
+    col_pass, col_btn = st.columns([3, 1])
+    with col_pass:
+        show_password = st.checkbox("비밀번호 보이기")
+        password_type = "default" if show_password else "password"
+        password = st.text_input("선생님 비밀번호를 입력하세요.", type=password_type)
+    
+    with col_btn:
+        st.write("") # 줄바꿈용
+        st.write("") # 줄바꿈용
+        login_btn = st.button("확인")
 
     # 비밀번호가 맞을 경우에만 관리자 기능 표시
     # st.secrets를 사용하여 안전하게 비밀번호를 불러옵니다.
     # 이 비밀번호는 Streamlit Cloud의 설정에서 지정하게 됩니다.
     if "TEACHER_PASSWORD" not in st.secrets:
         st.error("설정 파일(.streamlit/secrets.toml)에 'TEACHER_PASSWORD'가 없습니다.")
-    elif password.strip() == st.secrets["TEACHER_PASSWORD"]:
+    elif (password.strip() == st.secrets["TEACHER_PASSWORD"]) and (password or login_btn):
         tab1, tab2 = st.tabs(["용액 요청 관리", "제출된 탐구일지"])
 
         with tab1:
